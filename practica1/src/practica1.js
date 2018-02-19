@@ -9,7 +9,64 @@ var MemoryGame = MemoryGame || {};
  * Constructora de MemoryGame
  */
 MemoryGame = function(gs) {
+	this.gs = gs;
+	this.cartas = [];
+	this.cartasEncontradas = [];
+	this.mensajeEstado;
+	
+   /**
+	* Inicializa el juego creando las cartas (recuerda que son 2 de cadatipo de carta), 
+	* desordenándolas y comenzando el bucle de juego.
+	*/
+	this.initGame = function() {
+		this.mensajeEstado = "Memory Game";
+		this.creaCartas();
+		this.desordenaCartas();
+		this.loop();
+		
+	}
+	
+   /**
+    * Dibuja el juego, esto es: (1) escribe el mensaje con el estado actual del juego y 
+	* (2) pide a cada una de las cartas del tablero que se dibujen.
+	*/
+	this.draw = function() {
 
+	}
+	
+   /**
+	* Es el bucle del juego.
+	*/
+	this.loop = function() {
+		
+	}
+	
+   /**
+    * Este método se llama cada vez que el jugador pulsa sobre
+	* alguna de las cartas (identificada por el número que ocupan en el array de cartas
+	* del juego). Es el responsable de voltear la carta y, si hay dos volteadas, comprobar
+	* si son la misma (en cuyo caso las marcará como encontradas). En caso de no ser
+	* la misma las volverá a poner boca abajo
+	*/
+	this.onClick = function(cardId) {
+		
+	}
+	
+   /**
+	* Este método crea 8 pares de cartas de las disponibles
+	*/
+	this.creaCartas = function() {
+		
+	}
+	
+   /**
+	* Este método desordena las cartas de manera aleatoria
+	*/
+	this.desordenaCartas = function() {
+		
+	}
+	
+	
 };
 
 
@@ -21,5 +78,34 @@ MemoryGame = function(gs) {
  * @param {string} id Nombre del sprite que representa la carta
  */
 MemoryGameCard = function(id) {
-
+	
+   /** 
+	* Da la vuelta a la carta, cambiando el estado de la misma
+	*/
+	this.flip() {
+	
+	}
+	
+   /** 
+	* Marca una carta como encontrada, cambiando el estado de la misma
+	*/
+	 this.found() {
+	
+	 }
+	 
+   /**
+	* Compara dos cartas, devolviendo true si ambas representan la misma carta
+	*/
+	this.compareTo(otherCard) {
+		
+	}
+	
+   /**
+	* Dibuja la carta de acuerdo al estado en el que se encuentra.
+	* Recibe como parámetros el servidor gráfico y la posición en la que se encuentra en
+	* el array de cartas del juego (necesario para dibujar una carta).
+	*/
+	this.draw(gs, pos) {
+	
+	}
 };
