@@ -20,8 +20,8 @@ MemoryGame = function(gs) {
 	*/
 	this.initGame = function() {
 		this.mensajeEstado = "Memory Game";
-		this.creaCartas();
-		this.desordenaCartas();
+		this.crearCartas();
+		this.desordenarCartas();
 		this.loop();
 		
 	}
@@ -53,25 +53,38 @@ MemoryGame = function(gs) {
 	}
 	
    /**
-	* Este método crea 8 pares de cartas de las disponibles
+	* Este método crea 8 pares de cartas de las disponibles y las guarda en el array de cartas
 	*/
-	this.creaCartas = function() {
+	this.crearCartas = function() {
 		this.cartas = [
-			new 
+			new MemoryGameCard("8-ball"),
+			new MemoryGameCard("8-ball"),
+			new MemoryGameCard("potato"), 
+	    	new MemoryGameCard("potato"),
+	    	new MemoryGameCard("dinosaur"), 
+	    	new MemoryGameCard("dinosaur"),
+	    	new MemoryGameCard("kronos"), 
+	    	new MemoryGameCard("kronos"),
+	    	new MemoryGameCard("rocket"), 
+	    	new MemoryGameCard("rocket"),
+	    	new MemoryGameCard("unicorn"), 
+	    	new MemoryGameCard("unicorn"),
+	    	new MemoryGameCard("guy"), 
+	    	new MemoryGameCard("guy"),
+	    	new MemoryGameCard("zeppelin"), 
+	    	new MemoryGameCard("zeppelin")
 		]
 	}
 	
    /**
 	* Este método desordena las cartas de manera aleatoria
 	*/
-	this.desordenaCartas = function() {
-		
+	this.desordenarCartas = function() {
+		// Una posible solución: coger un numero al azar, multiplicarlo por el numero de cartas del array.
+		// Extraer la carta elegida del array y guardarla en uno auxiliar.
+		// Cuando se hayan sacado todas las cartas, ya estarán desordenadas en el array auxiliar.
 	}
-	
-	
 };
-
-
 
 /**
  * Constructora de las cartas del juego. Recibe como parámetro el nombre del sprite que representa la carta.
