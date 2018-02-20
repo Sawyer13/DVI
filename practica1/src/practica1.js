@@ -56,7 +56,9 @@ MemoryGame = function(gs) {
 	* Este método crea 8 pares de cartas de las disponibles
 	*/
 	this.creaCartas = function() {
-		
+		this.cartas = [
+			new 
+		]
 	}
 	
    /**
@@ -79,25 +81,34 @@ MemoryGame = function(gs) {
  */
 MemoryGameCard = function(id) {
 	
+	this.nombre = id;
+	this.volteada = false;
+	this.encontrada = false;
+	
    /** 
 	* Da la vuelta a la carta, cambiando el estado de la misma
 	*/
 	this.flip() {
-	
+		if (this.volteada == false) {
+			this.volteada = true;
+		}
+		else { 
+		this.volteada = false;
+		}
 	}
 	
    /** 
 	* Marca una carta como encontrada, cambiando el estado de la misma
 	*/
-	 this.found() {
-	
-	 }
+	this.found() {
+		this.encontrada = true;
+	}
 	 
    /**
 	* Compara dos cartas, devolviendo true si ambas representan la misma carta
 	*/
 	this.compareTo(otherCard) {
-		
+		return this.nombre == otherCard.nombre;
 	}
 	
    /**
@@ -106,6 +117,13 @@ MemoryGameCard = function(id) {
 	* el array de cartas del juego (necesario para dibujar una carta).
 	*/
 	this.draw(gs, pos) {
-	
+		// Si no está volteada, se ve la cara trasera.
+		if(this.volteada = false) {
+			gs.draw("back",pos);
+		}
+		// En caso contrario, se ve la cara de su id.
+		else {
+			gs.draw(this.nombre,pos);
+		}
 	}
 };
