@@ -80,9 +80,16 @@ MemoryGame = function(gs) {
 	* Este método desordena las cartas de manera aleatoria
 	*/
 	this.desordenarCartas = function() {
-		// Una posible solución: coger un numero al azar, multiplicarlo por el numero de cartas del array.
-		// Extraer la carta elegida del array y guardarla en uno auxiliar.
-		// Cuando se hayan sacado todas las cartas, ya estarán desordenadas en el array auxiliar.
+		var numCartas = this.cartas.length
+		var cartasAux = [];
+		while(numCartas > 0) {
+			elem = Math.floor(Math.random() * numCartas);
+			aux = this.cartas[elem];
+			this.cartas.splice(elem,1);
+			cartasAux.push(aux);
+			numCartas = this.cartas.length;
+		}
+		this.cartas = cartasAux;
 	}
 };
 
