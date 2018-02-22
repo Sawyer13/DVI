@@ -13,32 +13,40 @@ MemoryGame = function(gs) {
     this.cartas = [];
     this.cartasEncontradas = [];
     this.mensajeEstado;
-    
+    this.estado;
+	this.carta1;
+	this.carta2;
+	
    /**
-    * Inicializa el juego creando las cartas (recuerda que son 2 de cadatipo de carta), 
+    * Inicializa el juego creando las cartas (recuerda que son 2 de cada tipo de carta), 
     * desordenándolas y comenzando el bucle de juego.
     */
     this.initGame = function() {
         this.mensajeEstado = "Memory Game";
+		this.estado = 0;
         this.crearCartas();
         this.desordenarCartas();
         this.loop();
-        
     }
     
    /**
-    * Dibuja el juego, esto es: (1) escribe el mensaje con el estado actual del juego y 
+    * Dibuja el juego, esto es:
+    * (1) escribe el mensaje con el estado actual del juego
     * (2) pide a cada una de las cartas del tablero que se dibujen.
     */
     this.draw = function() {
-
+        this.gs.drawMessage(this.mensajeEstado);
+        for (var i = 0; i < this.cartas.length; i++) {
+            this.cartas[i].draw(this.gs, i);
+		}
     }
     
    /**
     * Es el bucle del juego.
     */
     this.loop = function() {
-        
+		var that = this; 
+        setInterval(function(){that.draw()}, 16);
     }
     
    /**
@@ -49,7 +57,42 @@ MemoryGame = function(gs) {
     * la misma las volverá a poner boca abajo
     */
     this.onClick = function(cardId) {
-        
+		console.log(this.estado);
+		//En el estado 0
+		if (!this.cartas[cardId].volteada && this.estado == 0) {
+			this.mensajeEstado = "Clic another card";
+			this.carta1 = this.cartas[cardId]
+            this.carta1.flip();
+			this.estado = 1;
+        }
+		//En el estado 1
+		if (!this.cartas[cardId].volteada && this.estado == 1) {
+			this.carta2 = this.cartas[cardId]
+			this.carta2.flip();
+			this.estado = 2;
+        }
+		//En el estado 2
+        if (this.estado == 2) {
+			c1 = this.carta1;
+			c2 = this.carta2;
+			var that = this;
+			if(!c1.compareTo(c2)){
+				this.mensajeEstado = "Try again!";
+				setTimeout(function() {
+					c1.flip();
+					c2.flip();
+					that.estado = 0;
+				},1000);
+			}
+			else {
+				this.mensajeEstado = "Great!";
+				this.estado = 0;
+			}
+		}
+		
+		//setTimeout es un callback (asíncrona)
+		//Ejecuta lo que vaya a continuación sin esperar. Hay que solucionar 
+		//esos problemas.
     }
     
    /**
@@ -100,15 +143,15 @@ MemoryGame = function(gs) {
  * @param {string} id Nombre del sprite que representa la carta
  */
 MemoryGameCard = function(id) {
-    
+
     this.nombre = id;
     this.volteada = false;
     this.encontrada = false;
-    
-   /** 
+
+   /**
     * Da la vuelta a la carta, cambiando el estado de la misma
     */
-    this.flip() {
+    this.flip = function() {
         if (this.volteada == false) {
             this.volteada = true;
         }
@@ -120,14 +163,14 @@ MemoryGameCard = function(id) {
    /** 
     * Marca una carta como encontrada, cambiando el estado de la misma
     */
-    this.found() {
+    this.found = function()  {
         this.encontrada = true;
     }
      
    /**
     * Compara dos cartas, devolviendo true si ambas representan la misma carta
     */
-    this.compareTo(otherCard) {
+    this.compareTo = function(otherCard) {
         return this.nombre == otherCard.nombre;
     }
     
@@ -136,14 +179,14 @@ MemoryGameCard = function(id) {
     * Recibe como parámetros el servidor gráfico y la posición en la que se encuentra en
     * el array de cartas del juego (necesario para dibujar una carta).
     */
-    this.draw(gs, pos) {
+    this.draw = function(gs, pos)  {
         // Si no está volteada, se ve la cara trasera.
-        if(this.volteada = false) {
-            gs.draw("back",pos);
+        if(this.volteada == false) {
+            gs.draw("back", pos);
         }
         // En caso contrario, se ve la cara de su id.
         else {
-            gs.draw(this.nombre,pos);
+            gs.draw(this.nombre, pos);
         }
     }
 };
