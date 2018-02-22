@@ -76,21 +76,25 @@ MemoryGame = function(gs) {
 			c1 = this.carta1;
 			c2 = this.carta2;
 			var that = this;
+			//Si no coinciden
 			if(!c1.compareTo(c2)){
 				this.mensajeEstado = "Try again";
 				setTimeout(function() {
 					c1.flip();
 					c2.flip();
-					//Se libera el Estado.
+					//Y se libera el Estado.
 					that.estado = 0;
 				},1000);
 			}
+			//Si coinciden
 			else {
 				this.cartasEncontradas.push(c1);
+				c1.encontrada = true;
 				this.cartasEncontradas.push(c2);
+				c2.encontrada = true;
 				this.mensajeEstado = "Match found!!";
 				setTimeout(function() {
-					//Se libera el Estado.
+					//Y se libera el Estado.
 					that.estado = 0;
 				},1000);
 			}
