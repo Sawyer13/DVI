@@ -57,42 +57,46 @@ MemoryGame = function(gs) {
     * la misma las volverá a poner boca abajo
     */
     this.onClick = function(cardId) {
-		console.log(this.estado);
-		//En el estado 0
-		if (!this.cartas[cardId].volteada && this.estado == 0) {
-			this.mensajeEstado = "Clic another card";
+		//Estado 0: no se ha pulsado ninguna carta
+		if (this.estado == 0 && !this.cartas[cardId].volteada) {
 			this.carta1 = this.cartas[cardId]
-            this.carta1.flip();
+			this.carta1.flip();
 			this.estado = 1;
-        }
-		//En el estado 1
-		if (!this.cartas[cardId].volteada && this.estado == 1) {
+		}
+		//Estado 1: se ha pulsado 1 carta
+		if (this.estado == 1 && !this.cartas[cardId].volteada) {
 			this.carta2 = this.cartas[cardId]
 			this.carta2.flip();
 			this.estado = 2;
-        }
-		//En el estado 2
-        if (this.estado == 2) {
+		}
+		//Estado 2: se han pulsado 2 cartas
+		if (this.estado == 2) {
+			//Se pasa a Estado 3 para bloquear el juego.
+			this.estado = 3;
 			c1 = this.carta1;
 			c2 = this.carta2;
 			var that = this;
 			if(!c1.compareTo(c2)){
-				this.mensajeEstado = "Try again!";
+				this.mensajeEstado = "Try again";
 				setTimeout(function() {
 					c1.flip();
 					c2.flip();
+					//Se libera el Estado.
 					that.estado = 0;
 				},1000);
 			}
 			else {
-				this.mensajeEstado = "Great!";
-				this.estado = 0;
+				this.cartasEncontradas.push(c1);
+				this.cartasEncontradas.push(c2);
+				this.mensajeEstado = "Match found!!";
+				setTimeout(function() {
+					//Se libera el Estado.
+					that.estado = 0;
+				},1000);
 			}
 		}
-		
-		//setTimeout es un callback (asíncrona)
-		//Ejecuta lo que vaya a continuación sin esperar. Hay que solucionar 
-		//esos problemas.
+		if (this.cartasEncontradas.length == this.cartas.length)
+			this.mensajeEstado = "You win!!";
     }
     
    /**
