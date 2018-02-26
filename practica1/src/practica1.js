@@ -68,11 +68,8 @@ MemoryGame = function(gs) {
 			this.carta2 = this.cartas[cardId]
 			this.carta2.flip();
 			this.estado = 2;
-		}
-		//Estado 2: se han pulsado 2 cartas
-		if (this.estado == 2) {
-			//Se pasa a Estado 3 para bloquear el juego.
-			this.estado = 3;
+			//Se pasa a Estado 2 para bloquear el juego.
+			this.estado = 2;
 			c1 = this.carta1;
 			c2 = this.carta2;
 			var that = this;
@@ -82,7 +79,7 @@ MemoryGame = function(gs) {
 				setTimeout(function() {
 					c1.flip();
 					c2.flip();
-					//Y se libera el Estado.
+					//Y se vuelve al estado 0
 					that.estado = 0;
 				},1000);
 			}
@@ -93,7 +90,7 @@ MemoryGame = function(gs) {
 				this.cartasEncontradas.push(c2);
 				c2.encontrada = true;
 				this.mensajeEstado = "Match found!!";
-				//Y se libera el Estado.
+				//Y se vuelve al estado 0
 				that.estado = 0;
 			}
 		}
@@ -130,14 +127,18 @@ MemoryGame = function(gs) {
 	 */
 	this.desordenarCartas = function() {
 		var numCartas = this.cartas.length
+		//Se crea un array de cartas auxiliar
 		var cartasAux = [];
+		//Mientras haya cartas en el array original
 		while(numCartas > 0) {
+			//Se selecciona una carta aleatoria y se mete en el array auxiliar
 			elem = Math.floor(Math.random() * numCartas);
 			aux = this.cartas[elem];
 			this.cartas.splice(elem,1);
 			cartasAux.push(aux);
 			numCartas = this.cartas.length;
 		}
+		//Se pasan las cartas desordenadas al array original
 		this.cartas = cartasAux;
 	}
 };
