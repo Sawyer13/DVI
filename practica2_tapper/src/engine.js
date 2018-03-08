@@ -54,7 +54,7 @@ var Game = new function() {
   
 
   // Handle Input
-  var KEY_CODES = { 37:'left', 39:'right', 32 :'fire' };
+  var KEY_CODES = { 38:'arriba', 40:'abajo', 32:'espacio' };
   this.keys = {};
 
   this.setupInput = function() {
@@ -165,8 +165,8 @@ var SpriteSheet = new function() {
 var TitleScreen = function TitleScreen(title,subtitle,callback) {
   var up = false;
   this.step = function(dt) {
-    if(!Game.keys['fire']) up = true;
-    if(up && Game.keys['fire'] && callback) callback();
+    if(!Game.keys['espacio']) up = true;
+    if(up && Game.keys['espacio'] && callback) callback();
   };
 
   this.draw = function(ctx) {
@@ -386,9 +386,9 @@ var TouchControls = function() {
     ctx.save();
 
     var yLoc = Game.height - unitWidth;
-    this.drawSquare(ctx,gutterWidth,yLoc,"\u25C0", Game.keys['left']);
-    this.drawSquare(ctx,unitWidth + gutterWidth,yLoc,"\u25B6", Game.keys['right']);
-    this.drawSquare(ctx,4*unitWidth,yLoc,"A",Game.keys['fire']);
+    this.drawSquare(ctx,gutterWidth,yLoc,"\u25C0", Game.keys['arriba']);
+    this.drawSquare(ctx,unitWidth + gutterWidth,yLoc,"\u25B6", Game.keys['abajo']);
+    this.drawSquare(ctx,4*unitWidth,yLoc,"A",Game.keys['espacio']);
 
     ctx.restore();
   };
@@ -399,16 +399,16 @@ var TouchControls = function() {
     var touch, x;
 
     e.preventDefault();
-    Game.keys['left'] = false;
-    Game.keys['right'] = false;
+    Game.keys['arriba'] = false;
+    Game.keys['abajo'] = false;
     for(var i=0;i<e.targetTouches.length;i++) {
       touch = e.targetTouches[i];
       x = touch.pageX / Game.canvasMultiplier - Game.canvas.offsetLeft;
       if(x < unitWidth) {
-        Game.keys['left'] = true;
+        Game.keys['arriba'] = true;
       } 
       if(x > unitWidth && x < 2*unitWidth) {
-        Game.keys['right'] = true;
+        Game.keys['abajo'] = true;
       } 
     }
 
@@ -417,7 +417,7 @@ var TouchControls = function() {
         touch = e.changedTouches[i];
         x = touch.pageX / Game.canvasMultiplier - Game.canvas.offsetLeft;
         if(x > 4 * unitWidth) {
-          Game.keys['fire'] = (e.type == 'touchstart');
+          Game.keys['espacio'] = (e.type == 'touchstart');
         }
       }
     }
