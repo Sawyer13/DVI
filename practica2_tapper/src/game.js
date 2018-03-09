@@ -44,6 +44,7 @@ var Player = function() {
 	this.x = 325;
 	this.y = 90;
 	teclaPulsada = false;
+	espacioPulsado = false;
 	this.step = function(){
 		if(Game.keys['arriba'] && !teclaPulsada) {
 			teclaPulsada = true;
@@ -83,12 +84,33 @@ var Player = function() {
 	    		this.y = 90;
 	    	}
 		}
+		if(Game.keys['espacio'] && !espacioPulsado) {
+			espacioPulsado = true;
+			this.board.add(new Beer(this.x-10,this.y, 2.5));
+		}
 		if(!Game.keys['abajo'] && !Game.keys['arriba'])
 			teclaPulsada = false;
+		if(!Game.keys['espacio'])
+			espacioPulsado = false;
 	};
 };
 Player.prototype = new Sprite();
 Player.prototype.type = OBJECT_PLAYER;
+
+var Beer = function(x, y, v) {
+	this.setup('Beer', {});
+	this.x = x;
+	this.y = y;
+	this.vel = -v;
+	console.log(this.vel);
+	
+	this.step = function() {
+		this.x += this.vel;
+	};
+};
+Beer.prototype = new Sprite();
+Beer.prototype.type = OBJECT_PLAYER_PROJECTILE;
+
 
 var level1 = [
  // Start,   End, Gap,  Type,   Override
