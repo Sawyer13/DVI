@@ -32,11 +32,10 @@ var playGame = function() {
   Game.setBoard(1, board);
   
   //Clientes de prueba
-  board.add(new Client(100, 80, 1));
-  board.add(new Client(66, 175, 1.2));
-  board.add(new Client(33, 271, 1.7));
+  board.add(new Client(100, 80, 0.5));
+  board.add(new Client(66, 175, 0.2));
+  board.add(new Client(33, 271, 1.0));
   board.add(new Client(0, 367, 0.6));
-  //board.add(new DeadZone(0,512,10));
   
   //Pared izquierda
   var board2 = new GameBoard();
@@ -44,6 +43,7 @@ var playGame = function() {
   board2.add(new tapperLeftWall());
 };
 
+//Fondo de pantalla principal
 var tapperBackground = function() {
   this.setup('TapperGameplay', {});
   this.x = 0;
@@ -52,6 +52,7 @@ var tapperBackground = function() {
 };
 tapperBackground.prototype = new Sprite();
 
+//Pared izquierda
 var tapperLeftWall = function() {
   this.setup('ParedIzda', {});
   this.x = 0;
@@ -60,6 +61,7 @@ var tapperLeftWall = function() {
 };
 tapperLeftWall.prototype = new Sprite();
 
+//Jugador
 var Player = function() {
 	this.setup('Player', {});
 	this.x = 325;
@@ -118,12 +120,13 @@ var Player = function() {
 Player.prototype = new Sprite();
 Player.prototype.type = OBJECT_PLAYER;
 
+//Cliente
 var Client = function(x, y, v) {
 	this.setup('NPC', {});
 	this.x = x;
 	this.y = y;
 	this.vel = v;
-	
+	//Desaparece cuando choca con una cerveza y genera un vaso vacío
 	this.step = function() {
 		this.x += this.vel;
 		var collision = this.board.collide(this,OBJECT_PLAYER_PROJECTILE);
@@ -136,40 +139,39 @@ var Client = function(x, y, v) {
 Client.prototype = new Sprite();
 Client.prototype.type = OBJECT_ENEMY;
 
-
+//Cerveza
 var Beer = function(x, y, v) {
 	this.setup('Beer', {});
 	this.x = x;
 	this.y = y;
 	this.vel = -v;
-	
+	//Desaparece cuando choca con un vaso vacío o con la pared
 	this.step = function() {
 		this.x += this.vel;
-		var colisionEnemigo = this.board.collide(this,OBJECT_ENEMY);
-		if(colisionEnemigo) this.vel = -10000;
-		
-		var colisionPared = this.board.collide(this,OBJECT_DEADZONE);
-		if(colisionPared) this.board.remove(this);
+		if(this.board.collide(this,OBJECT_ENEMY_PROJECTILE)) this.board.remove(this);
+		if(this.board.collide(this,OBJECT_DEADZONE)) this.board.remove(this);
 	};
 };
 Beer.prototype = new Sprite();
 Beer.prototype.type = OBJECT_PLAYER_PROJECTILE;
 
+//Vaso vacío
 var Glass = function(x, y, v) {
 	this.setup('Glass', {});
 	this.x = x;
 	this.y = y;
 	this.vel = v;
-	
+	//Desaparece cuando choca con el jugador o con la pared
 	this.step = function() {
 		this.x += this.vel;
 		if(this.board.collide(this,OBJECT_PLAYER)) this.board.remove(this);
-		
+		if(this.board.collide(this,OBJECT_DEADZONE)) this.board.remove(this);
 	};
 };
 Glass.prototype = new Sprite();
 Glass.prototype.type = OBJECT_ENEMY_PROJECTILE;
 
+//Paredes laterales. (Falta definir mejor)
 var DeadZone = function(x,y,lado) {
 	this.x = x;
 	this.y = y;
@@ -178,17 +180,6 @@ var DeadZone = function(x,y,lado) {
 }
 DeadZone.prototype.type = OBJECT_DEADZONE;
 
-var level1 = [
- // Start,   End, Gap,  Type,   Override
-  [ 0,      4000,  500, 'step' ],
-  [ 6000,   13000, 800, 'ltr' ],
-  [ 10000,  16000, 400, 'circle' ],
-  [ 17800,  20000, 500, 'straight', { x: 50 } ],
-  [ 18200,  20000, 500, 'straight', { x: 90 } ],
-  [ 18200,  20000, 500, 'straight', { x: 10 } ],
-  [ 22000,  25000, 400, 'wiggle', { x: 150 }],
-  [ 22000,  25000, 400, 'wiggle', { x: 100 }]
-];
 
 var winGame = function() {
   Game.setBoard(3,new TitleScreen("You win!", 
