@@ -3,10 +3,23 @@ var sprites = {
  Glass: { sx: 512, sy: 131, w: 23, h: 32, frames: 1 },
  NPC: { sx: 512, sy: 66, w: 33, h: 33, frames: 1 },
  ParedIzda: { sx: 0, sy: 0, w: 512, h: 480, frames: 1 },
- Player: { sx: 512, sy: 0, w: 56, h: 66, frames: 1 },
+ TpSingle: { sx: 512, sy: 0, w: 56, h: 66, frames: 1 },
  TapperGameplay: { sx: 0, sy: 480, w: 512, h: 480, frames: 1 }
 };
-	//Jugador
+
+var enemies = {
+  straight: { x: 0,   y: -50, sprite: 'enemy_ship', health: 10,
+              E: 100 },
+  ltr:      { x: 0,   y: -100, sprite: 'enemy_purple', health: 10,
+              B: 75, C: 1, E: 100, missiles: 2  },
+  circle:   { x: 250,   y: -50, sprite: 'enemy_circle', health: 10,
+              A: 0,  B: -100, C: 1, E: 20, F: 100, G: 1, H: Math.PI/2 },
+  wiggle:   { x: 100, y: -50, sprite: 'enemy_bee', health: 20,
+              B: 50, C: 4, E: 100, firePercentage: 0.001, missiles: 2 },
+  step:     { x: 0,   y: -50, sprite: 'enemy_circle', health: 10,
+              B: 150, C: 1.2, E: 75 }
+};
+
 var OBJECT_PLAYER = 1,
 	//Jarras con cerveza
     OBJECT_PLAYER_PROJECTILE = 2,
@@ -20,30 +33,63 @@ var OBJECT_PLAYER = 1,
 
 var startGame = function() {
   var ua = navigator.userAgent.toLowerCase();
-  Game.setBoard(0,new TitleScreen("Tapper", 
-                                  "Press space to start playing",
+
+  // Only 1 row of stars
+  if(ua.match(/android/)) {
+    Game.setBoard(0,new Starfield(50,0.6,100,true));
+  } else {
+    Game.setBoard(0,new Starfield(20,0.4,100,true));
+    Game.setBoard(1,new Starfield(50,0.6,100));
+    Game.setBoard(2,new Starfield(100,1.0,50));
+  }
+  Game.setBoard(3,new TitleScreen("Alien Invasion",
+                                  "Press fire to start playing",
                                   playGame));
 };
+
+var level1 = [
+ // Start,   End, Gap,  Type,   Override
+  [ 0,      4000,  500, 'step' ],
+  [ 6000,   13000, 800, 'ltr' ],
+  [ 10000,  16000, 400, 'circle' ],
+  [ 17800,  20000, 500, 'straight', { x: 50 } ],
+  [ 18200,  20000, 500, 'straight', { x: 90 } ],
+  [ 18200,  20000, 500, 'straight', { x: 10 } ],
+  [ 22000,  25000, 400, 'wiggle', { x: 150 }],
+  [ 22000,  25000, 400, 'wiggle', { x: 100 }]
+];
+
+
 
 var playGame = function() {
   Game.setBoard(0, new tapperBackground());
   var board = new GameBoard();
-  board.add(new Player());
+  board.add(new PlayerTpSingle());
   Game.setBoard(1, board);
-  
-  //Clientes de prueba
-  board.add(new Client(100, 80, 0.5));
-  board.add(new Client(66, 175, 0.2));
-  board.add(new Client(33, 271, 1.0));
-  board.add(new Client(0, 367, 0.6));
-  
-  //Pared izquierda
+
+  //Pared izquierda para hacer el gesto de saliendo puerta clientes
   var board2 = new GameBoard();
   Game.setBoard(2, board2);
   board2.add(new tapperLeftWall());
+
+  //Clientes de prueba
+  board.add(new Client(120, 80, 0.5));
+  board.add(new Client(90, 175, 0.2));
+  board.add(new Client(60, 271, 1.0));
+  board.add(new Client(25, 367, 0.6));
+
+  //DeadZone
+  board.add(new DeadZone(90,80));
+  board.add(new DeadZone(66,175));
+  board.add(new DeadZone(33,271));
+  board.add(new DeadZone(0,367));
+  board.add(new DeadZone(345,80));
+  board.add(new DeadZone(375,175));
+  board.add(new DeadZone(410,271));
+  board.add(new DeadZone(440,367));
 };
 
-//Fondo de pantalla principal
+//Fondo de pantalla principal - Creo un nuevo objeto que hereda de sprite y que me dibuja la imagen del fondo
 var tapperBackground = function() {
   this.setup('TapperGameplay', {});
   this.x = 0;
@@ -61,101 +107,190 @@ var tapperLeftWall = function() {
 };
 tapperLeftWall.prototype = new Sprite();
 
-//Jugador
-var Player = function() {
-	this.setup('Player', {});
+var winGame = function() {
+  Game.setBoard(3,new TitleScreen("You win!",
+                                  "Press fire to play again",
+                                  playGame));
+};
+
+var loseGame = function() {
+  Game.setBoard(3,new TitleScreen("You lose!",
+                                  "Press fire to play again",
+                                  playGame));
+};
+
+var Starfield = function(speed,opacity,numStars,clear) {
+
+  // Set up the offscreen canvas
+  var stars = document.createElement("canvas");
+  stars.width = Game.width;
+  stars.height = Game.height;
+  var starCtx = stars.getContext("2d");
+
+  var offset = 0;
+
+  // If the clear option is set,
+  // make the background black instead of transparent
+  if(clear) {
+    starCtx.fillStyle = "#000";
+    starCtx.fillRect(0,0,stars.width,stars.height);
+  }
+
+  // Now draw a bunch of random 2 pixel
+  // rectangles onto the offscreen canvas
+  starCtx.fillStyle = "#FFF";
+  starCtx.globalAlpha = opacity;
+  for(var i=0;i<numStars;i++) {
+    starCtx.fillRect(Math.floor(Math.random()*stars.width),
+                     Math.floor(Math.random()*stars.height),
+                     2,
+                     2);
+  }
+
+  // This method is called every frame
+  // to draw the starfield onto the canvas
+  this.draw = function(ctx) {
+    var intOffset = Math.floor(offset);
+    var remaining = stars.height - intOffset;
+
+    // Draw the top half of the starfield
+    if(intOffset > 0) {
+      ctx.drawImage(stars,
+                0, remaining,
+                stars.width, intOffset,
+                0, 0,
+                stars.width, intOffset);
+    }
+
+    // Draw the bottom half of the starfield
+    if(remaining > 0) {
+      ctx.drawImage(stars,
+              0, 0,
+              stars.width, remaining,
+              0, intOffset,
+              stars.width, remaining);
+    }
+  };
+
+  // This method is called to update
+  // the starfield
+  this.step = function(dt) {
+    offset += dt * speed;
+    offset = offset % stars.height;
+  };
+};
+
+//Jugador - Player
+var PlayerTpSingle = function() {
+	this.setup('TpSingle', {});
 	this.x = 325;
 	this.y = 90;
+
 	teclaPulsada = false;
 	espacioPulsado = false;
-	this.step = function(){
-		if(Game.keys['arriba'] && !teclaPulsada) {
-			teclaPulsada = true;
-			if(this.x === 325 && this.y === 90){
-	    		this.x = 421;
-	    		this.y = 377;
-	    	}
-	    	else if(this.x === 357 && this.y === 185){
-	    		this.x = 325;
-	    		this.y = 90;
-	    	}
-	    	else if(this.x === 389 && this.y === 281){
-	    		this.x = 357;
-	    		this.y = 185;
-	    	}
-	    	else if(this.x === 421 && this.y === 377){
-	    		this.x = 389;
-	    		this.y = 281;
-	    	}
-		}
-		if(Game.keys['abajo'] && !teclaPulsada) {
-			teclaPulsada = true;
-			if(this.x === 325 && this.y === 90){
-	    		this.x = 357;
-	    		this.y = 185;
-	    	}
-	    	else if(this.x === 357 && this.y === 185){
-	    		this.x = 389;
-	    		this.y = 281;
-	    	}
-	    	else if(this.x === 389 && this.y === 281){
-	    		this.x = 421;
-	    		this.y = 377;
-	    	}
-	    	else if(this.x === 421 && this.y === 377){
-	    		this.x = 325;
-	    		this.y = 90;
-	    	}
-		}
-		if(Game.keys['espacio'] && !espacioPulsado) {
-			espacioPulsado = true;
-			this.board.add(new Beer(this.x-10,this.y, 2.5));
-		}
-		if(!Game.keys['abajo'] && !Game.keys['arriba'])
-			teclaPulsada = false;
-		if(!Game.keys['espacio'])
-			espacioPulsado = false;
-	};
-};
-Player.prototype = new Sprite();
-Player.prototype.type = OBJECT_PLAYER;
 
-//Cliente
-var Client = function(x, y, v) {
-	this.setup('NPC', {});
-	this.x = x;
-	this.y = y;
-	this.vel = v;
-	//Desaparece cuando choca con una cerveza y genera un vaso vacío
-	this.step = function() {
-		this.x += this.vel;
-		var collision = this.board.collide(this,OBJECT_PLAYER_PROJECTILE);
-		if(collision) {
-			this.board.remove(this);
-			this.board.add(new Glass(this.x, this.y+10, 2.5));
-		}
-	};
+  this.step = function(){
+		if(Game.keys['up'] && !teclaPulsada) {
+			teclaPulsada = true;
+			if(this.x === 325 && this.y === 90){
+    		this.x = 421;
+    		this.y = 377;
+    	}
+    	else if(this.x === 357 && this.y === 185){
+    		this.x = 325;
+    		this.y = 90;
+    	}
+    	else if(this.x === 389 && this.y === 281){
+    		this.x = 357;
+    		this.y = 185;
+    	}
+    	else if(this.x === 421 && this.y === 377){
+    		this.x = 389;
+    		this.y = 281;
+    	}
+	  }
+		if(Game.keys['down'] && !teclaPulsada) {
+			teclaPulsada = true;
+			if(this.x === 325 && this.y === 90){
+	    		this.x = 357;
+	    		this.y = 185;
+	    	}
+	    	else if(this.x === 357 && this.y === 185){
+	    		this.x = 389;
+	    		this.y = 281;
+	    	}
+	    	else if(this.x === 389 && this.y === 281){
+	    		this.x = 421;
+	    		this.y = 377;
+	    	}
+	    	else if(this.x === 421 && this.y === 377){
+	    		this.x = 325;
+	    		this.y = 90;
+	    	}
+  		}
+  		if(Game.keys['fire'] && !espacioPulsado) {
+  			espacioPulsado = true;
+  			this.board.add(new Beer(this.x-10,this.y, 2.5));
+  		}
+  		if(!Game.keys['up'] && !Game.keys['down'])
+  			teclaPulsada = false;
+  		if(!Game.keys['fire'])
+  			espacioPulsado = false;
+    };
 };
-Client.prototype = new Sprite();
-Client.prototype.type = OBJECT_ENEMY;
+
+PlayerTpSingle.prototype = new Sprite();
+PlayerTpSingle.prototype.type = OBJECT_PLAYER;
 
 //Cerveza
 var Beer = function(x, y, v) {
 	this.setup('Beer', {});
 	this.x = x;
 	this.y = y;
-	this.vel = -v;
+	this.vel = -v; //Si no va hacia la derecha
+
 	//Desaparece cuando choca con un vaso vacío o con la pared
 	this.step = function() {
 		this.x += this.vel;
-		if(this.board.collide(this,OBJECT_ENEMY_PROJECTILE)) this.board.remove(this);
-		if(this.board.collide(this,OBJECT_DEADZONE)) this.board.remove(this);
+    /* El enunciado indica: "date cuenta
+      "que solo han de desaparecer las jarras vacías, no las cervezas"*/
+
+    if(this.board.collide(this,OBJECT_DEADZONE)){
+      this.board.remove(this);
+    }
 	};
 };
+
 Beer.prototype = new Sprite();
 Beer.prototype.type = OBJECT_PLAYER_PROJECTILE;
 
-//Vaso vacío
+// Movimiento y velocidad
+var Client = function(x, y, v) {
+	this.setup('NPC', {});
+	this.x = x;
+	this.y = y;
+  this.vel = v;
+	teclaPulsada = false;
+	espacioPulsado = false;
+
+  this.step = function() {
+		this.x += this.vel;
+    // Generamos un choque
+		if(this.board.collide(this,OBJECT_PLAYER_PROJECTILE)) {
+      this.board.remove(OBJECT_PLAYER_PROJECTILE);
+      this.board.remove(this);
+			this.board.add(new Glass(this.x, this.y+10, 2.5));
+		}
+
+  if(this.board.collide(this,OBJECT_DEADZONE)){
+      this.board.remove(this);
+    }
+  }
+};
+
+Client.prototype = new Sprite();
+Client.prototype.type = OBJECT_ENEMY;
+
 var Glass = function(x, y, v) {
 	this.setup('Glass', {});
 	this.x = x;
@@ -164,35 +299,53 @@ var Glass = function(x, y, v) {
 	//Desaparece cuando choca con el jugador o con la pared
 	this.step = function() {
 		this.x += this.vel;
-		if(this.board.collide(this,OBJECT_PLAYER)) this.board.remove(this);
-		if(this.board.collide(this,OBJECT_DEADZONE)) this.board.remove(this);
+		if(this.board.collide(this,OBJECT_PLAYER)) {
+      this.board.remove(this);
+    }
+		if(this.board.collide(this,OBJECT_DEADZONE)){
+      this.board.remove(this);
+    }
 	};
 };
+
 Glass.prototype = new Sprite();
 Glass.prototype.type = OBJECT_ENEMY_PROJECTILE;
 
 //Paredes laterales. (Falta definir mejor)
-var DeadZone = function(x,y,lado) {
-	this.x = x;
-	this.y = y;
-	this.lado = lado;
-	this.step = function() {}
-}
-DeadZone.prototype.type = OBJECT_DEADZONE;
+var DeadZone = function(x,y) {
+  this.w = 20;
+  this.h = 80;
+  this.x = x;
+  this.y = y;
 
+  this.step = function(){
+    var collisionEnemy = this.board.collide(this,OBJECT_ENEMY);
 
-var winGame = function() {
-  Game.setBoard(3,new TitleScreen("You win!", 
-                                  "Press space to play again",
-                                  playGame));
+  	if(collisionEnemy) {
+  		console.log("Enemigo colisiona");
+      this.board.remove(OBJECT_ENEMY);
+  	}
+
+    var collisionBeer = this.board.collide(this,OBJECT_PLAYER_PROJECTILE);
+  	if(collisionBeer){
+      console.log("Cerveza colisiona");
+      this.board.remove(OBJECT_PLAYER);
+  	}
+  }
 };
 
-var loseGame = function() {
-  Game.setBoard(3,new TitleScreen("You lose!", 
-                                  "Press space to play again",
-                                  playGame));
+DeadZone.prototype = new Sprite();
+DeadZone.prototype.type = OBJECT_DEADZONE;
+
+DeadZone.prototype.draw = function(ctx){
+	var canvas = document.getElementById('game');
+	if (canvas.getContext) {
+		var ctx = canvas.getContext('2d');
+		ctx.fillStyle = "green";
+		ctx.fillRect(this.x,this.y,this.w,this.h);
+	}
 };
 
 window.addEventListener("load", function() {
-  Game.initialize("game",sprites,startGame);
+  Game.initialize("game",sprites,playGame);
 });
