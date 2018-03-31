@@ -72,11 +72,12 @@ var playGame = function() {
   Game.setBoard(2, board2);
   board2.add(new tapperLeftWall());
 
-  //Clientes de prueba
-  board.add(new Client(120, 80, 0.5));
-  board.add(new Client(90, 175, 0.2));
-  board.add(new Client(60, 271, 1.0));
-  board.add(new Client(25, 367, 0.6));
+
+  //Respaen de cada posición en la barra -> board, clients, frequency, delay, x, y)
+  var spawn1 = new Spawner(board, 2, 3000,  500, 120,  80, 0.5);
+  var spawn2 = new Spawner(board, 1, 5500, 1000,  90, 175, 0.2);
+  var spawn3 = new Spawner(board, 5, 1500, 700,  60, 271, 1.0);
+  var spawn4 = new Spawner(board, 7, 1000, 1300,  25, 367, 0.6);
 
   //DeadZone
   board.add(new DeadZone(90,80));
@@ -343,6 +344,28 @@ DeadZone.prototype.draw = function(ctx){
 		var ctx = canvas.getContext('2d');
 		ctx.fillStyle = "green";
 		ctx.fillRect(this.x,this.y,this.w,this.h);
+	}
+};
+
+var Spawner = function(board, clients, frequency, delay, x, y, v){
+	this.proto = new Client();
+	this.board = board;
+	this.clients = clients;
+	this.frequency = frequency;
+	this.delay = delay;
+	this.x = x;
+  this.y = y;
+
+  console.log("entra");
+
+  for(i=0; i<this.clients; i++){
+		this.delay+=Math.floor((Math.random() * 1000) + 0);
+		setTimeout(function(){
+
+      var client = new Client(x, y, v);
+			board.add(client);
+			//console.log(board);
+		}, this.delay + this.frequency*i);
 	}
 };
 
