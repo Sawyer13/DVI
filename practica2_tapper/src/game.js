@@ -258,6 +258,7 @@ var Beer = function(x, y, v) {
 
     if(this.board.collide(this,OBJECT_DEADZONE)){
       this.board.remove(this);
+      GameManager.glassOnDeadZone();
     }
 	};
 };
@@ -280,11 +281,13 @@ var Client = function(x, y, v) {
 		if(this.board.collide(this,OBJECT_PLAYER_PROJECTILE)) {
       this.board.remove(OBJECT_PLAYER_PROJECTILE);
       this.board.remove(this);
+      GameManager.setClientsServed();
 			this.board.add(new Glass(this.x, this.y+10, 2.5));
 		}
 
   if(this.board.collide(this,OBJECT_DEADZONE)){
       this.board.remove(this);
+      GameManager.clientOnDeadZone();
     }
   }
 };
@@ -293,6 +296,7 @@ Client.prototype = new Sprite();
 Client.prototype.type = OBJECT_ENEMY;
 
 var Glass = function(x, y, v) {
+  GameManager.setNumberGlass();
 	this.setup('Glass', {});
 	this.x = x;
 	this.y = y;
@@ -302,6 +306,7 @@ var Glass = function(x, y, v) {
 		this.x += this.vel;
 		if(this.board.collide(this,OBJECT_PLAYER)) {
       this.board.remove(this);
+      GameManager.setGlassCollected();
     }
 		if(this.board.collide(this,OBJECT_DEADZONE)){
       this.board.remove(this);
@@ -348,7 +353,8 @@ DeadZone.prototype.draw = function(ctx){
 };
 
 var Spawner = function(board, clients, frequency, delay, x, y, v){
-	this.proto = new Client();
+  GameManager.setNumberClient(clients);
+  this.proto = new Client();
 	this.board = board;
 	this.clients = clients;
 	this.frequency = frequency;
@@ -356,7 +362,7 @@ var Spawner = function(board, clients, frequency, delay, x, y, v){
 	this.x = x;
   this.y = y;
 
-  console.log("entra");
+  //console.log("entra");
 
   for(i=0; i<this.clients; i++){
 		this.delay+=Math.floor((Math.random() * 1000) + 0);
@@ -367,6 +373,77 @@ var Spawner = function(board, clients, frequency, delay, x, y, v){
 			//console.log(board);
 		}, this.delay + this.frequency*i);
 	}
+};
+
+// Patron singleton -> https://es.wikipedia.org/wiki/Singleton#Javascript
+var GameManager = new function(){
+	this.clients = 0;
+	this.glass = 0;
+
+  // Se debe avisar de cuantos clientes se van a generar
+	this.setNumberClient = function(clients){
+		this.clients = this.clients + clients;
+		console.log("Clientes añadido. Total: " + this.clients);
+
+    if(this.clients == 0){
+      this.gameState(0);
+    }
+	};
+
+  // Se debe avisar cada vez que se creen jarras vacias
+	this.setNumberGlass = function(){
+		this.glass = this.glass + 1;
+		console.log("Glass creada. Total: " + this.glass);
+	};
+
+  // Aviso de que he recogido una jarra vacia
+  this.setGlassCollected = function(){
+    this.glass = this.glass - 1;
+    if(this.glass == 0){
+      this.gameState(0);
+    }
+  }
+
+  //Se debe avisar cada vez que sirvamos a un cliente
+	this.setClientsServed = function(){
+		this.clients = this.clients - 1;
+    console.log("Cliente servido. Total: " + this.clients);
+	};
+
+  // Se debe avisar cuando un cliente llega al extremo de la barra
+  this.clientOnDeadZone = function(){
+    console.log("Cliente en el extemo de la barra!");
+    this.clients = this.clients - 1;
+    this.gameState(1);
+  }
+
+  // Se debe avisar cuando una jarra vacia llega al extremo de la barra
+  this.glassOnDeadZone = function(){
+    console.log("Una jarra ha caido!");
+    this.glass = this.glass - 1;
+    this.gameState(1);
+  }
+
+  /* - El jugador gana si:
+        - No quedan clientes a los que servir. (El número de clientes es fijo
+          para un nivel y se conoce a priori)
+        - No quedan jarras vacias que recoger
+     - El jugador pierde si:
+        - Algún cliente llega al extremo derecho de la barra
+        - Alguna cerveza llena llega al extremo izquierdo de la barra
+        - Alguna jarra vacia llega al extremo derecho de la barra
+  */
+	this.gameState = function(derrota){
+		console.log(this.clients, this.glass);
+
+    if(derrota == 0){
+		  if(this.clients == 0 || this.glass == 0){
+			  console.log("¡Todo limpio! ¡Has ganado!");
+		  }
+    }else{
+      console.log("Has perdido... :(");
+    }
+	};
 };
 
 window.addEventListener("load", function() {
