@@ -42,8 +42,8 @@ var startGame = function() {
     Game.setBoard(1,new Starfield(50,0.6,100));
     Game.setBoard(2,new Starfield(100,1.0,50));
   }
-  Game.setBoard(3,new TitleScreen("Alien Invasion",
-                                  "Press fire to start playing",
+  Game.setBoard(3,new TitleScreen("Tapper",
+                                  "Press [ENTER] to start playing",
                                   playGame));
 };
 
@@ -88,6 +88,8 @@ var playGame = function() {
   board.add(new DeadZone(375,175));
   board.add(new DeadZone(410,271));
   board.add(new DeadZone(440,367));
+
+  Game.setBoard(3,board);
 };
 
 //Fondo de pantalla principal - Creo un nuevo objeto que hereda de sprite y que me dibuja la imagen del fondo
@@ -110,13 +112,13 @@ tapperLeftWall.prototype = new Sprite();
 
 var winGame = function() {
   Game.setBoard(3,new TitleScreen("You win!",
-                                  "Press fire to play again",
+                                  "Press [SPACE] to play again",
                                   playGame));
 };
 
 var loseGame = function() {
   Game.setBoard(3,new TitleScreen("You lose!",
-                                  "Press fire to play again",
+                                  "Press [SPACE] to play again",
                                   playGame));
 };
 
@@ -379,6 +381,7 @@ var Spawner = function(board, clients, frequency, delay, x, y, v){
 var GameManager = new function(){
 	this.clients = 0;
 	this.glass = 0;
+  this.beginBeer = 0;
 
   // Se debe avisar de cuantos clientes se van a generar
 	this.setNumberClient = function(clients){
@@ -419,9 +422,14 @@ var GameManager = new function(){
 
   // Se debe avisar cuando una jarra vacia llega al extremo de la barra
   this.glassOnDeadZone = function(){
-    console.log("Una jarra ha caido!");
-    this.glass = this.glass - 1;
-    this.gameState(1);
+    // El primer disparo lo obvio
+    if(this.beginBeer == 0){
+      this.beginBeer = this.beginBeer + 1;
+    }else{
+      console.log("Una jarra ha caido!");
+      this.glass = this.glass - 1;
+      this.gameState(1);
+    }
   }
 
   /* - El jugador gana si:
@@ -439,13 +447,15 @@ var GameManager = new function(){
     if(derrota == 0){
 		  if(this.clients == 0 || this.glass == 0){
 			  console.log("¡Todo limpio! ¡Has ganado!");
+        winGame();
 		  }
     }else{
       console.log("Has perdido... :(");
+      loseGame();
     }
 	};
 };
 
 window.addEventListener("load", function() {
-  Game.initialize("game",sprites,playGame);
+  Game.initialize("game",sprites,startGame);
 });
