@@ -74,10 +74,10 @@ var playGame = function() {
 
 
   //Respaen de cada posición en la barra -> board, clients, frequency, delay, x, y)
-  var spawn1 = new Spawner(board, 2, 3000,  500, 120,  80, 0.5);
-  var spawn2 = new Spawner(board, 1, 5500, 1000,  90, 175, 0.2);
-  var spawn3 = new Spawner(board, 5, 1500, 700,  60, 271, 1.0);
-  var spawn4 = new Spawner(board, 7, 1000, 1300,  25, 367, 0.6);
+  var spawn1 = new Spawner(board, 2, 4000,  500, 120,  80, 0.5);
+  var spawn2 = new Spawner(board, 1, 6500, 1000,  90, 175, 0.2);
+  var spawn3 = new Spawner(board, 5, 2500, 700,  60, 271, 1.0);
+  var spawn4 = new Spawner(board, 7, 2000, 1300,  25, 367, 0.6);
 
   //DeadZone
   board.add(new DeadZone(90,80));
@@ -239,6 +239,12 @@ var PlayerTpSingle = function() {
   			teclaPulsada = false;
   		if(!Game.keys['fire'])
   			espacioPulsado = false;
+
+      var collision = this.board.collide(this,OBJECT_ENEMY_PROJECTILE);
+      if(collision) {
+        collision.hit(0);
+        GameManager.setGlassCollected();
+      }
     };
 };
 
@@ -255,11 +261,9 @@ var Beer = function(x, y, v) {
 	//Desaparece cuando choca con un vaso vacío o con la pared
 	this.step = function() {
 		this.x += this.vel;
-    /* El enunciado indica: "date cuenta
-      "que solo han de desaparecer las jarras vacías, no las cervezas"*/
-
-    if(this.board.collide(this,OBJECT_DEADZONE)){
-      this.board.remove(this);
+    var collision = this.board.collide(this,OBJECT_DEADZONE);
+    if(collision){
+      this.hit(0);
       GameManager.glassOnDeadZone();
     }
 	};
@@ -280,15 +284,17 @@ var Client = function(x, y, v) {
   this.step = function() {
 		this.x += this.vel;
     // Generamos un choque
-		if(this.board.collide(this,OBJECT_PLAYER_PROJECTILE)) {
-      this.board.remove(OBJECT_PLAYER_PROJECTILE);
-      this.board.remove(this);
+    var collision = this.board.collide(this,OBJECT_PLAYER_PROJECTILE);
+		if(collision) {
+      collision.hit(0);
+      this.hit(0);
       GameManager.setClientsServed();
 			this.board.add(new Glass(this.x, this.y+10, 2.5));
 		}
 
-  if(this.board.collide(this,OBJECT_DEADZONE)){
-      this.board.remove(this);
+    var collision = this.board.collide(this,OBJECT_DEADZONE);
+    if(collision){
+      collision.hit(0);
       GameManager.clientOnDeadZone();
     }
   }
@@ -306,12 +312,9 @@ var Glass = function(x, y, v) {
 	//Desaparece cuando choca con el jugador o con la pared
 	this.step = function() {
 		this.x += this.vel;
-		if(this.board.collide(this,OBJECT_PLAYER)) {
-      this.board.remove(this);
-      GameManager.setGlassCollected();
-    }
-		if(this.board.collide(this,OBJECT_DEADZONE)){
-      this.board.remove(this);
+    var collision = this.board.collide(this,OBJECT_DEADZONE);
+		if(collision){
+      this.hit(0);;
     }
 	};
 };
@@ -327,17 +330,17 @@ var DeadZone = function(x,y) {
   this.y = y;
 
   this.step = function(){
-    var collisionEnemy = this.board.collide(this,OBJECT_ENEMY);
+    var collision = this.board.collide(this,OBJECT_ENEMY);
 
-  	if(collisionEnemy) {
+  	if(collision) {
   		console.log("Enemigo colisiona");
-      this.board.remove(OBJECT_ENEMY);
+      collisionEnemy.hit(0);
   	}
 
-    var collisionBeer = this.board.collide(this,OBJECT_PLAYER_PROJECTILE);
-  	if(collisionBeer){
+    var collision = this.board.collide(this,OBJECT_PLAYER_PROJECTILE);
+  	if(collision){
       console.log("Cerveza colisiona");
-      this.board.remove(OBJECT_PLAYER);
+      collisionBeer.hit(0);
   	}
   }
 };
@@ -445,7 +448,7 @@ var GameManager = new function(){
 		console.log(this.clients, this.glass);
 
     if(derrota == 0){
-		  if(this.clients == 0 || this.glass == 0){
+		  if(this.clients == 0 && this.glass == 0){
 			  console.log("¡Todo limpio! ¡Has ganado!");
         winGame();
 		  }
