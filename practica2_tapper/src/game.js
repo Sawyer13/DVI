@@ -59,7 +59,7 @@ var level1 = [
   [ 22000,  25000, 400, 'wiggle', { x: 100 }]
 ];
 
-
+var playerBar = [[325, 90], [421, 377], [357, 185], [389, 281]];
 
 var playGame = function() {
   Game.setBoard(0, new tapperBackground());
@@ -73,7 +73,7 @@ var playGame = function() {
   board2.add(new tapperLeftWall());
 
 
-  //Respaen de cada posición en la barra -> board, clients, frequency, delay, x, y)
+  //Respaen de cada posición en la barra -> board, clients, frequency, delay, x, y, lap)
   var spawn1 = new Spawner(board, 2, 4000,  500, 120,  80, 0.5);
   var spawn2 = new Spawner(board, 1, 6500, 1000,  90, 175, 0.2);
   var spawn3 = new Spawner(board, 5, 2500, 700,  60, 271, 1.0);
@@ -186,8 +186,8 @@ var Starfield = function(speed,opacity,numStars,clear) {
 //Jugador - Player
 var PlayerTpSingle = function() {
 	this.setup('TpSingle', {});
-	this.x = 325;
-	this.y = 90;
+	this.x = playerBar[0][0];
+	this.y = playerBar[0][1];
 
 	teclaPulsada = false;
 	espacioPulsado = false;
@@ -195,13 +195,13 @@ var PlayerTpSingle = function() {
   this.step = function(){
 		if(Game.keys['up'] && !teclaPulsada) {
 			teclaPulsada = true;
-			if(this.x === 325 && this.y === 90){
-    		this.x = 421;
-    		this.y = 377;
+			if(this.x === playerBar[0][0] && this.y === playerBar[0][1]){
+    		this.x = playerBar[1][0];
+    		this.y = playerBar[1][1];
     	}
     	else if(this.x === 357 && this.y === 185){
-    		this.x = 325;
-    		this.y = 90;
+    		this.x = playerBar[0][0];
+    		this.y = playerBar[0][1];
     	}
     	else if(this.x === 389 && this.y === 281){
     		this.x = 357;
@@ -214,7 +214,7 @@ var PlayerTpSingle = function() {
 	  }
 		if(Game.keys['down'] && !teclaPulsada) {
 			teclaPulsada = true;
-			if(this.x === 325 && this.y === 90){
+			if(this.x === playerBar[0][0] && this.y === playerBar[0][1]){
 	    		this.x = 357;
 	    		this.y = 185;
 	    	}
@@ -227,8 +227,8 @@ var PlayerTpSingle = function() {
 	    		this.y = 377;
 	    	}
 	    	else if(this.x === 421 && this.y === 377){
-	    		this.x = 325;
-	    		this.y = 90;
+	    		this.x = playerBar[0][0];
+	    		this.y = playerBar[0][1];
 	    	}
   		}
   		if(Game.keys['fire'] && !espacioPulsado) {
@@ -314,7 +314,8 @@ var Glass = function(x, y, v) {
 		this.x += this.vel;
     var collision = this.board.collide(this,OBJECT_DEADZONE);
 		if(collision){
-      this.hit(0);;
+      this.hit(0);
+      GameManager.glassOnDeadZone();
     }
 	};
 };
@@ -334,13 +335,13 @@ var DeadZone = function(x,y) {
 
   	if(collision) {
   		console.log("Enemigo colisiona");
-      collisionEnemy.hit(0);
+      collision.hit(0);
   	}
 
     var collision = this.board.collide(this,OBJECT_PLAYER_PROJECTILE);
   	if(collision){
       console.log("Cerveza colisiona");
-      collisionBeer.hit(0);
+      collision.hit(0);
   	}
   }
 };
