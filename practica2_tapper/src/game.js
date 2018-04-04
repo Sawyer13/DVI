@@ -112,13 +112,13 @@ tapperLeftWall.prototype = new Sprite();
 
 var winGame = function() {
   Game.setBoard(3,new TitleScreen("You win!",
-                                  "Press [SPACE] to play again",
+                                  "Press [ENTER] to play again",
                                   playGame));
 };
 
 var loseGame = function() {
   Game.setBoard(3,new TitleScreen("You lose!",
-                                  "Press [SPACE] to play again",
+                                  "Press [ENTER] to play again",
                                   playGame));
 };
 
@@ -199,34 +199,34 @@ var PlayerTpSingle = function() {
     		this.x = playerBar[1][0];
     		this.y = playerBar[1][1];
     	}
-    	else if(this.x === 357 && this.y === 185){
+    	else if(this.x === playerBar[2][0] && this.y === playerBar[2][1]){
     		this.x = playerBar[0][0];
     		this.y = playerBar[0][1];
     	}
-    	else if(this.x === 389 && this.y === 281){
-    		this.x = 357;
-    		this.y = 185;
+    	else if(this.x === playerBar[3][0] && this.y === playerBar[3][1]){
+    		this.x = playerBar[2][0];
+    		this.y = playerBar[2][1];
     	}
-    	else if(this.x === 421 && this.y === 377){
-    		this.x = 389;
-    		this.y = 281;
+    	else if(this.x === playerBar[1][0] && this.y === playerBar[1][1]){
+    		this.x = playerBar[3][0];
+    		this.y = playerBar[3][1];
     	}
 	  }
 		if(Game.keys['down'] && !teclaPulsada) {
 			teclaPulsada = true;
 			if(this.x === playerBar[0][0] && this.y === playerBar[0][1]){
-	    		this.x = 357;
-	    		this.y = 185;
+	    		this.x = playerBar[2][0];
+	    		this.y = playerBar[2][1];
 	    	}
-	    	else if(this.x === 357 && this.y === 185){
-	    		this.x = 389;
-	    		this.y = 281;
+	    	else if(this.x === playerBar[2][0] && this.y === playerBar[2][1]){
+	    		this.x = playerBar[3][0];
+	    		this.y = playerBar[3][1];
 	    	}
-	    	else if(this.x === 389 && this.y === 281){
-	    		this.x = 421;
-	    		this.y = 377;
+	    	else if(this.x === playerBar[3][0] && this.y === playerBar[3][1]){
+	    		this.x = playerBar[1][0];
+	    		this.y = playerBar[1][1];
 	    	}
-	    	else if(this.x === 421 && this.y === 377){
+	    	else if(this.x === playerBar[1][0] && this.y === playerBar[1][1]){
 	    		this.x = playerBar[0][0];
 	    		this.y = playerBar[0][1];
 	    	}
@@ -234,6 +234,7 @@ var PlayerTpSingle = function() {
   		if(Game.keys['fire'] && !espacioPulsado) {
   			espacioPulsado = true;
   			this.board.add(new Beer(this.x-10,this.y, 2.5));
+        GameManager.setNumberBeer();
   		}
   		if(!Game.keys['up'] && !Game.keys['down'])
   			teclaPulsada = false;
@@ -353,7 +354,8 @@ DeadZone.prototype.draw = function(ctx){
 	var canvas = document.getElementById('game');
 	if (canvas.getContext) {
 		var ctx = canvas.getContext('2d');
-		ctx.fillStyle = "green";
+    // Cambiar por un color para visualizar las DeadZones
+		ctx.fillStyle = "transparent";
 		ctx.fillRect(this.x,this.y,this.w,this.h);
 	}
 };
@@ -385,7 +387,7 @@ var Spawner = function(board, clients, frequency, delay, x, y, v){
 var GameManager = new function(){
 	this.clients = 0;
 	this.glass = 0;
-  this.beginBeer = 0;
+  this.beer = 0;
 
   // Se debe avisar de cuantos clientes se van a generar
 	this.setNumberClient = function(clients){
@@ -400,8 +402,15 @@ var GameManager = new function(){
   // Se debe avisar cada vez que se creen jarras vacias
 	this.setNumberGlass = function(){
 		this.glass = this.glass + 1;
+    this.beer = this.beer - 1;
 		console.log("Glass creada. Total: " + this.glass);
 	};
+
+  // Se debe avisar cuando se creen jarras
+  this.setNumberBeer = function(){
+    this.beer = this.beer + 1;
+    console.log("Cerveza puesta. Total: " + this.beer);
+  };
 
   // Aviso de que he recogido una jarra vacia
   this.setGlassCollected = function(){
@@ -426,14 +435,9 @@ var GameManager = new function(){
 
   // Se debe avisar cuando una jarra vacia llega al extremo de la barra
   this.glassOnDeadZone = function(){
-    // El primer disparo lo obvio
-    if(this.beginBeer == 0){
-      this.beginBeer = this.beginBeer + 1;
-    }else{
-      console.log("Una jarra ha caido!");
-      this.glass = this.glass - 1;
-      this.gameState(1);
-    }
+    console.log("Una jarra ha caido!");
+    this.glass = this.glass - 1;
+    this.gameState(1);
   }
 
   /* - El jugador gana si:
@@ -446,16 +450,19 @@ var GameManager = new function(){
         - Alguna jarra vacia llega al extremo derecho de la barra
   */
 	this.gameState = function(derrota){
-		console.log(this.clients, this.glass);
+		console.log(this.clients, this.glass, this.beer);
 
     if(derrota == 0){
-		  if(this.clients == 0 && this.glass == 0){
+		  if(this.clients == 0 && this.glass == 0 && this.beer == 0){
 			  console.log("¡Todo limpio! ¡Has ganado!");
         winGame();
 		  }
     }else{
       console.log("Has perdido... :(");
       loseGame();
+      this.clients = 0;
+      this.beer = 0;
+      this.glass = 0;
     }
 	};
 };
