@@ -194,7 +194,7 @@ var PlayerTpSingle = function() {
 
   this.step = function(){
 		if(Game.keys['up'] && !teclaPulsada) {
-      console.log("Up pulsada");
+      //console.log("Up pulsada");
 			teclaPulsada = true;
 			if(this.x === playerBar[0][0] && this.y === playerBar[0][1]){
     		this.x = playerBar[1][0];
@@ -214,8 +214,8 @@ var PlayerTpSingle = function() {
     	}
 	  }
 		if(Game.keys['down'] && !teclaPulsada) {
-      console.log("Down pulsada");
-      console.log(teclaPulsada);
+      //console.log("Down pulsada");
+      //console.log(teclaPulsada);
 			teclaPulsada = true;
 			if(this.x === playerBar[0][0] && this.y === playerBar[0][1]){
 	    		this.x = playerBar[2][0];
@@ -238,13 +238,13 @@ var PlayerTpSingle = function() {
   			espacioPulsado = true;
   			this.board.add(new Beer(this.x-10,this.y, 2.5));
         GameManager.setNumberBeer();
-        console.log("presiono espacioPulsado");
+        //console.log("presiono espacioPulsado");
   		}
   		if(!Game.keys['up'] && !Game.keys['down'])
   			teclaPulsada = false;
   		if(!Game.keys['fire']){
   			espacioPulsado = false;
-        console.log("levanto espacio");
+        //console.log("levanto espacio");
       }
 
       var collision = this.board.collide(this,OBJECT_ENEMY_PROJECTILE);
