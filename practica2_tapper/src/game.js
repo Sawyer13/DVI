@@ -43,7 +43,7 @@ var startGame = function() {
     Game.setBoard(2,new Starfield(100,1.0,50));
   }
   Game.setBoard(3,new TitleScreen("Tapper",
-                                  "Press [ENTER] to start playing",
+                                  "Press [SPACE] to start playing",
                                   playGame));
 };
 
@@ -112,13 +112,13 @@ tapperLeftWall.prototype = new Sprite();
 
 var winGame = function() {
   Game.setBoard(3,new TitleScreen("You win!",
-                                  "Press [ENTER] to play again",
+                                  "Press [SPACE] to play again",
                                   playGame));
 };
 
 var loseGame = function() {
   Game.setBoard(3,new TitleScreen("You lose!",
-                                  "Press [ENTER] to play again",
+                                  "Press [SPACE] to play again",
                                   playGame));
 };
 
@@ -194,6 +194,7 @@ var PlayerTpSingle = function() {
 
   this.step = function(){
 		if(Game.keys['up'] && !teclaPulsada) {
+      console.log("Up pulsada");
 			teclaPulsada = true;
 			if(this.x === playerBar[0][0] && this.y === playerBar[0][1]){
     		this.x = playerBar[1][0];
@@ -213,6 +214,8 @@ var PlayerTpSingle = function() {
     	}
 	  }
 		if(Game.keys['down'] && !teclaPulsada) {
+      console.log("Down pulsada");
+      console.log(teclaPulsada);
 			teclaPulsada = true;
 			if(this.x === playerBar[0][0] && this.y === playerBar[0][1]){
 	    		this.x = playerBar[2][0];
@@ -235,11 +238,14 @@ var PlayerTpSingle = function() {
   			espacioPulsado = true;
   			this.board.add(new Beer(this.x-10,this.y, 2.5));
         GameManager.setNumberBeer();
+        console.log("presiono espacioPulsado");
   		}
   		if(!Game.keys['up'] && !Game.keys['down'])
   			teclaPulsada = false;
-  		if(!Game.keys['fire'])
+  		if(!Game.keys['fire']){
   			espacioPulsado = false;
+        console.log("levanto espacio");
+      }
 
       var collision = this.board.collide(this,OBJECT_ENEMY_PROJECTILE);
       if(collision) {
@@ -279,8 +285,6 @@ var Client = function(x, y, v) {
 	this.x = x;
 	this.y = y;
   this.vel = v;
-	teclaPulsada = false;
-	espacioPulsado = false;
 
   this.step = function() {
 		this.x += this.vel;
