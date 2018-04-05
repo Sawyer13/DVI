@@ -190,7 +190,7 @@ var PlayerTpSingle = function() {
 	this.y = playerBar[0][1];
 
 	teclaPulsada = false;
-	espacioPulsado = false;
+	espacioPulsado = true;
 
   this.step = function(){
 		if(Game.keys['up'] && !teclaPulsada) {
