@@ -459,13 +459,16 @@ var GameManager = new function(){
     if(derrota == 0){
 		  if(this.clients == 0 && this.glass == 0 && this.beer == 0){
 			  console.log("¡Todo limpio! ¡Has ganado!");
+			  //beer a -1 para que se ponga a 0 al pulsar espacio
+			  this.beer = -1;
         winGame();
 		  }
     }else{
       console.log("Has perdido... :(");
       loseGame();
       this.clients = 0;
-      this.beer = 0;
+	  //beer a -1 para que se ponga a 0 al pulsar espacio
+      this.beer = -1;
       this.glass = 0;
     }
 	};
