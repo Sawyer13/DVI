@@ -337,7 +337,7 @@ window.addEventListener("load", function() {
 	}
 	
 	function coinboxesToMap([a, b]) {
-		return {x: + a*34+17, y: b*34+17};
+		return {x: + a*34+17, y: b*34+18};
 	}
 	//MUERTE
 	Q.scene("muerte", function(stage) {
