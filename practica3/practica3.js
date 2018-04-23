@@ -399,17 +399,19 @@ window.addEventListener("load", function() {
 		var punt1 = stage.insert(new Q.UI.Text({
 			x: 20, 
 			y: 20, 
-			size: 18,
+			size: 14,
 			align: 'left',
 			color: '#fff',
+			family: 'emulogic',
 			label: 'Mario'
 		}));
 		var punt2 = stage.insert(new Q.UI.Text({
 			x: 20, 
 			y: 20, 
-			size: 18,
+			size: 14,
 			align: 'left',
 			color: '#fff',
+			family: 'emulogic',
 			label: '\n' + Q.state.p.score
 		}));
 		Q.state.on("change.score", this, function(score) {
@@ -420,16 +422,17 @@ window.addEventListener("load", function() {
 	//MARCADOR DE MONEDAS
 	Q.scene('coins', function(stage){
 		var coin = stage.insert(new Q.Coin({
-			x: 140,
-			y: 50,
+			x: 130,
+			y: 45,
 			scale: 0.7
 		}));
 		var monedas = stage.insert(new Q.UI.Text({
-			x: 150,
+			x: 135,
 			y: 20, 
-			size: 18,
+			size: 14,
 			align: 'left',
 			color: '#fff',
+			family: 'emulogic',
 			label: '\n x ' + Q.state.p.coins
 		}));
 		Q.state.on("change.coins", this, function( coins ) {
@@ -441,15 +444,16 @@ window.addEventListener("load", function() {
 	Q.scene('lives', function(stage){
 		var lives = stage.insert(new Q.MarioVidas({
 			x: 240,
-			y: 50,
+			y: 45,
 			scale: 0.7
 		}));
 		var lives2 = stage.insert(new Q.UI.Text({
-			x: 250,
+			x: 245,
 			y: 20, 
-			size: 18,
+			size: 14,
 			align: 'left',
 			color: '#fff',
+			family: 'emulogic',
 			label: '\n x ' + Q.state.p.lives
 		}));
 		Q.state.on("change.lives", this, function( lives ) {
