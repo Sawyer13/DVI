@@ -17,7 +17,7 @@ window.addEventListener("load", function() {
 	.touch()
 	.enableSound();
 		
-	Q.load(["mario_small.png","mario_small.json", "goomba.png", "goomba.json", "bloopa.png", "bloopa.json", "piranha.png", "piranha.json", "koopa.png", "koopa.json", "princess.png", "coin.png", "coin.json","coinbox.png", "coinbox.json", "lives.png", "music_main.ogg", "music_die.ogg", "music_level_complete.ogg", "music_game over.ogg", "coin.ogg", "jump.ogg", "kick.ogg", "bump.ogg"], function(){
+	Q.load(["mario_small.png","mario_small.json", "goomba.png", "goomba.json", "bloopa.png", "bloopa.json", "piranha.png", "piranha.json", "koopa.png", "koopa.json", "princess.png", "coin.png", "coin.json","coinbox.png", "coinbox.json", "lives.png", "music_main.ogg", "music_die.ogg", "music_level_complete.ogg", "music_game_over.ogg", "coin.ogg", "jump.ogg", "kick.ogg", "bump.ogg"], function(){
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("goomba.png", "goomba.json");
 		Q.compileSheets("bloopa.png", "bloopa.json");
@@ -25,7 +25,6 @@ window.addEventListener("load", function() {
 		Q.compileSheets("coin.png","coin.json");
 		Q.compileSheets("coinbox.png","coinbox.json");
 		Q.compileSheets("koopa.png","koopa.json");
-		Q.stageScene("level1");
 	});
 	
 	//JUGADOR MARIO
@@ -220,7 +219,6 @@ window.addEventListener("load", function() {
 			this.on("bump.left, bump.right, bump.top", function(collision) {
 				if(collision.obj.isA("Mario")) {
 					Q.stage().pause();
-					Q.audio.play("music_level_complete.ogg");
 					Q.stageScene("victoria",1, { label: "You Win" });
 				}
 			});
@@ -324,9 +322,8 @@ window.addEventListener("load", function() {
 		for(c in coinBoxes){
 			var coinBox = stage.insert(new Q.CoinBox(coinboxesToMap(coinBoxes[c])));
 		}
-		Q.audio.play("music_main.ogg", { loop: true});
+	
 		stage.add("viewport").follow(mario,{ x: true, y: false });
-		a = stage.viewport;
 		stage.centerOn(102,675);
 		stage.viewport.offsetX = -50;
 		stage.viewport.offsetY = 0;
@@ -352,7 +349,8 @@ window.addEventListener("load", function() {
 		var label = box.insert(new Q.UI.Text({x:10, y: -10 - button.p.h, color: "#000",
 			label: stage.options.label }));
 		button.on("click",function() {
-			initGame();
+			if(Q.state.p.lives >= 0) initGame();
+			else endGame();
 		});
 		box.fit(20);
 	});
@@ -360,6 +358,7 @@ window.addEventListener("load", function() {
 	//VICTORIA
 	Q.scene("victoria", function(stage) {
 		Q.audio.stop('music_main.ogg');
+		Q.audio.play("music_level_complete.ogg");
 		var box = stage.insert(new Q.UI.Container({
 			x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
 		}));
@@ -377,20 +376,21 @@ window.addEventListener("load", function() {
 	
 	//DERROTA
 	Q.scene("derrota", function(stage) {
-		Q.audio.stop('music_main.mp3');
-		Q.audio.play("music_game over.ogg");
-		
+		Q.stageTMX("levelGameOver.tmx",stage);
+		stage.add("viewport");
+		stage.centerOn(160,240);
+
 		var box = stage.insert(new Q.UI.Container({
 			x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
 		}));
 
-		var button = box.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCC",
+		var button = box.insert(new Q.UI.Button({ x: 0, y: 50, fill: "#CCC",
 			label: "Play Again" }));
-		var label = box.insert(new Q.UI.Text({x:10, y: -10 - button.p.h, color: "#000",
-			label: stage.options.label }));
 		button.on("click",function() {
+			Q.state.reset({ lives: 3, score: 0, coins:0});
 			initGame();
 		});
+		
 		box.fit(20);
 	});
 	
@@ -457,7 +457,8 @@ window.addEventListener("load", function() {
 			label: '\n x ' + Q.state.p.lives
 		}));
 		Q.state.on("change.lives", this, function( lives ) {
-			lives2.p.label = '\n x ' + lives;
+			if(lives == -1) lives2.p.label = '\n x 0';
+			else lives2.p.label = '\n x ' + lives;
 		});	
 	});
 
@@ -465,6 +466,9 @@ window.addEventListener("load", function() {
 	//CARGA INICIO
 	function initGame() {
 		Q.loadTMX("level1.tmx", function() {
+			Q.audio.stop('music_die.ogg');
+			Q.audio.stop('music_level_complete.ogg');
+			Q.audio.play("music_main.ogg", { loop: true});
 			Q.clearStages();
 			Q.stageScene("level1");
 			Q.stageScene("score", 2);
@@ -472,8 +476,17 @@ window.addEventListener("load", function() {
 			Q.stageScene("lives", 4);
 		});
 	}
+	
+	function endGame() {
+		Q.loadTMX("levelGameOver.tmx", function() {
+			Q.audio.stop('music_main.ogg');
+			Q.audio.stop('music_die.ogg');
+			Q.audio.play("music_game_over.ogg");
+			Q.clearStages();
+			Q.stageScene("derrota",1);
+		});
+	}
 
 	Q.state.reset({ lives: 3, score: 0, coins:0});
 	initGame();
 });
-
