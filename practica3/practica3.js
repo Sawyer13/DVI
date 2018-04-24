@@ -273,18 +273,18 @@ window.addEventListener("load", function() {
 			this._super(p, {
 				sheet: 'coinbox',
 				sprite: "CoinBoxAnimation",
-				gravity: 0
+				gravity: 0,
+				coinsInside: 1
 			});
 			this.add('2d, aiBounce, animation');
 			this.play('shine');
-			
 			this.on("bump.bottom", function(collision) {
-				if(collision.obj.isA("Mario")) {
+				if(collision.obj.isA("Mario") && this.p.coinsInside > 0) {
 					Q.audio.play("coin.ogg");
-					this.del('2d');
 					Q.state.inc("coins", 1);
 					Q.state.inc("score", 200);
-					this.play('used');
+					this.p.coinsInside -= 1;
+					if(this.p.coinsInside < 1) this.play('used');
 				}
 			});
 		}
@@ -320,7 +320,7 @@ window.addEventListener("load", function() {
 		for(c in coins) {
 			var coin = stage.insert(new Q.Coin(coinsToMap(coins[c])));
 		}
-		var coinBoxes = [[16,21],[22,17],[21,21],[23,21],[63,21],[77,21],[92,17],[99,21],[104,21],[107,21],[110,21],[107,17],[167,21]]
+		var coinBoxes = [[16,21,1],[22,17,1],[21,21,1],[23,21,1],[63,21,1],[77,21,1],[92,17,1],[99,21,10],[104,21,1],[107,21,1],[110,21,1],[107,17,1],[167,21,1]]
 		for(c in coinBoxes){
 			var coinBox = stage.insert(new Q.CoinBox(coinboxesToMap(coinBoxes[c])));
 		}
@@ -336,8 +336,8 @@ window.addEventListener("load", function() {
 		return {x: + a*35 + 8.5, y: b*34+17};
 	}
 	
-	function coinboxesToMap([a, b]) {
-		return {x: + a*34+17, y: b*34+18};
+	function coinboxesToMap([a, b, c]) {
+		return {x: + a*34+17, y: b*34+18,coinsInside: c};
 	}
 	//MUERTE
 	Q.scene("muerte", function(stage) {
