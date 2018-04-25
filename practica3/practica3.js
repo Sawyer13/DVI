@@ -17,8 +17,8 @@ window.addEventListener("load", function() {
 	.touch()
 	.enableSound()
 	
-	Q.load(["mario_small.png","mario_small.json", "goomba.png", "goomba.json", "bloopa.png", "bloopa.json", "piranha.png", "piranha.json",
-	"koopa.png", "koopa.json", "princess.png", "coin.png", "coin.json","coinbox.png", "coinbox.json", "lives.png", "music_main.ogg",
+	Q.load(["mario_small.png","mario_small.json", "goomba.png", "goomba.json", "bloopa.png", "bloopa.json", "piranha.png", "piranha.json", "item_rise.ogg", "1up.ogg",
+	"koopa.png", "koopa.json", "princess.png", "coin.png", "coin.json","coinbox.png", "coinbox.json", "lives.png", "music_main.ogg", "mushroom.png","1up_mushroom.png",
 	"music_die.ogg", "music_level_complete.ogg", "music_game_over.ogg", "coin.ogg", "jump.ogg", "kick.ogg", "bump.ogg","gameover.png","mainTitle2.png"], function(){
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("goomba.png", "goomba.json");
@@ -265,7 +265,6 @@ window.addEventListener("load", function() {
 				if(collision.obj.isA("Mario")) {
 					Q.audio.play("coin.ogg");
 					this.del('2d');
-					this.p.type = Q.SPRITE_NONE;
 					this.animate({y: this.p.y - 70 }, 0.1, Q.Easing.Quadratic.In, { callback: function() {
 						this.destroy();}
 					});
@@ -290,36 +289,74 @@ window.addEventListener("load", function() {
 				sheet: 'coinbox',
 				sprite: "CoinBoxAnimation",
 				gravity: 0,
-				coinsInside: 1
+				coinsInside: 1,
+				mushroom: 0
 			});
 			this.add('2d, aiBounce, animation, tween');
 			this.play('shine');
 			this.on("bump.bottom", function(collision) {
-				if(collision.obj.isA("Mario") && this.p.coinsInside > 0) {
-					this.animate({y: this.p.y - 5 }, 0.05, Q.Easing.Quadratic.In, { callback: function() {
-								this.animate({y: this.p.y + 5}, 0.05, Q.Easing.Quadratic.In, { 
-									callback: function() { 
-										Q.audio.play("coin.ogg");
-										Q.state.inc("coins", 1);
-										Q.state.inc("score", 200);
-										this.p.coinsInside -= 1;
-										if(this.p.coinsInside < 1) this.play('used'); 
-									} 
-								});
+				if(this.p.mushroom == 0){
+					if(collision.obj.isA("Mario") && this.p.coinsInside > 0) {
+						this.animate({y: this.p.y - 5 }, 0.05, Q.Easing.Quadratic.In, { callback: function() {
+									this.animate({y: this.p.y + 5}, 0.05, Q.Easing.Quadratic.In, { 
+										callback: function() { 
+											Q.audio.play("coin.ogg");
+											Q.state.inc("coins", 1);
+											Q.state.inc("score", 200);
+											this.p.coinsInside -= 1;
+											if(this.p.coinsInside < 1) this.play('used'); 
+										} 
+									});
+								}
 							}
-						}
-					);
+						);
+					}
+				}
+				else {
+					this.animate({y: this.p.y - 5 }, 0.05, Q.Easing.Quadratic.In, { callback: function() {
+									this.animate({y: this.p.y + 5}, 0.05, Q.Easing.Quadratic.In, { 
+										callback: function() { 
+											Q.audio.play("item_rise.ogg");
+											var mushroom = Q.stage().insert(new Q.Mushroom({x: this.p.x, y: this.p.y -34}));
+											this.play('used');
+											this.p.mushroom = 0;
+										} 
+									});
+								}
+							}
+						);
+					
 				}
 			});
 		}
 		
 	});
+	
 	//ANIMACION COINBOX
 	Q.animations("CoinBoxAnimation", {
 		shine: { frames: [0, 1, 2], rate: 1/2 },
 		used: { frames: [3], rate: 1 }
 	});
 
+	//MUSHROOMS
+	Q.Sprite.extend("Mushroom",{
+		init: function(p){
+			this._super(p, {
+				asset: '1up_mushroom.png',
+				vx: 100
+			});
+			this.add('2d, aiBounce');
+			this.on("bump.left, bump.right, bump.top, bump.bottom", function(collision) {
+				if(collision.obj.isA("Mario")) {
+					Q.audio.play("1up.ogg");
+					this.del('2d');
+					this.destroy();
+					Q.state.inc("lives", 1);
+					Q.state.inc("score", 1000);
+				}
+			});
+		}
+	});
 	
 	//ESCENAS
 	
@@ -344,7 +381,8 @@ window.addEventListener("load", function() {
 		for(c in coins) {
 			var coin = stage.insert(new Q.Coin(coinsToMap(coins[c])));
 		}
-		var coinBoxes = [[16,21,1],[22,17,1],[21,21,1],[23,21,1],[63,21,1],[77,21,1],[92,17,1],[99,21,10],[104,21,1],[107,21,1],[110,21,1],[107,17,1],[167,21,1]]
+		
+		var coinBoxes = [[16,21,1,0],[22,17,1,0],[21,21,1,0],[23,21,1,0],[63,21,0,1],[77,21,1,0],[92,17,1,0],[99,21,10,0],[104,21,1,0],[107,21,1,0],[110,21,1,0],[107,17,1,0],[167,21,0,1]]
 		for(c in coinBoxes){
 			var coinBox = stage.insert(new Q.CoinBox(coinboxesToMap(coinBoxes[c])));
 		}
@@ -358,8 +396,8 @@ window.addEventListener("load", function() {
 		return {x: + a*35 + 8.5, y: b*34+17};
 	}
 	
-	function coinboxesToMap([a, b, c]) {
-		return {x: + a*34+17, y: b*34+18,coinsInside: c};
+	function coinboxesToMap([a, b, c, d]) {
+		return {x: + a*34+17, y: b*34+18,coinsInside: c, mushroom: d};
 	}
 	//MUERTE
 	Q.scene("muerte", function(stage) {
